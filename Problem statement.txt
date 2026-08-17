@@ -1,1 +1,120 @@
 
+[root@ip-172-31-8-196 ~]# cat ProcessManager.sh
+#!/bin/bash
+
+DIR="$HOME/.processmanager"
+mkdir -p "$DIR"
+
+case "$2" in
+
+register)
+
+    script="$4"
+    alias="$6"
+
+    echo "$script" > "$DIR/$alias"
+    echo "Service registered: $alias"
+
+    ;;
+
+start)
+
+    alias="$4"
+    script=$(cat "$DIR/$alias")
+
+    nohup bash "$script" > "$DIR/$alias.log" 2>&1 &
+    pid=$!
+
+    echo "$pid" > "$DIR/$alias.pid"
+
+    echo "Service started: $alias"
+    echo "PID: $pid"
+
+    ;;
+
+status)
+
+    alias="$4"
+
+    if [ -f "$DIR/$alias.pid" ]; then
+
+        pid=$(cat "$DIR/$alias.pid")
+
+        if ps -p "$pid" > /dev/null; then
+            echo "$alias is running (PID: $pid)"
+        else
+            echo "$alias is not running"
+        fi
+
+    else
+        echo "Service not found"
+    fi
+
+    ;;
+
+kill)
+
+    alias="$4"
+    pid=$(cat "$DIR/$alias.pid")
+
+    kill "$pid"
+
+    echo "Service stopped: $alias"
+
+    ;;
+
+priority)
+
+    priority="$4"
+    alias="$6"
+
+    pid=$(cat "$DIR/$alias.pid")
+
+    if [ "$priority" == "high" ]; then
+        renice -n -10 -p "$pid"
+
+    elif [ "$priority" == "med" ]; then
+        renice -n 0 -p "$pid"
+
+    elif [ "$priority" == "low" ]; then
+        renice -n 10 -p "$pid"
+
+    else
+        echo "Use low/med/high"
+    fi
+
+    ;;
+
+list)
+
+    ls "$DIR" | grep -v '\.pid\|\.log'
+
+    ;;
+
+top)
+
+    if [ -z "$4" ]; then
+        ps -eo pid,state,ni,comm
+    else
+        alias="$4"
+        pid=$(cat "$DIR/$alias.pid")
+        ps -p "$pid" -o pid,state,ni,comm
+    fi
+
+    ;;
+
+*)
+
+    echo "Usage:"
+    echo "./ProcessManager.sh -o register -s <path> -a <alias>"
+    echo "./ProcessManager.sh -o start -a <alias>"
+    echo "./ProcessManager.sh -o status -a <alias>"
+    echo "./ProcessManager.sh -o kill -a <alias>"
+    echo "./ProcessManager.sh -o priority -p <low/med/high> -a <alias>"
+    echo "./ProcessManager.sh -o list"
+    echo "./ProcessManager.sh -o top [-a <alias>]"
+
+    ;;
+
+esac
+[root@ip-172-31-8-196 ~]# 
