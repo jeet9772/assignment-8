@@ -55,4 +55,4 @@ git commit -m "Add git commit report script"
 ./gitCommitReport.sh -u https://github.com/opstree/spring3hibernate.git -d 40
 wc -l git_commit_report.csv
 ```
-<img width="1280" height="800" alt="44" src="https://github.com/user-attachments/assets/44ab90c0-4e35-457f-95db-1d25ce7b25da" /> d
+<img width="1280" height="800" alt="44" src="https://github.com/user-attachments/assets/44ab90c0-4e35-457f-95db-1d25ce7b25da" /> 
