@@ -1,120 +1,95 @@
 
-[root@ip-172-31-8-196 ~]# cat ProcessManager.sh
-#!/bin/bash
+#=======================================================================
+## PART A
+#=======================================================================
 
-DIR="$HOME/.processmanager"
-mkdir -p "$DIR"
+- Create a folder ninja at the root level of your cloned code
+- Add a file README.md with content "Trying fast forward merge" in  ninja folder
+- Create a branch ninja and move to it
+- Run git status command
+- Commit your changes to ninja branch
+- Merge ninja branch to master branch make sure that a new commit get's created
+- Assuming you are in the master branch, modify README.md with content "Changes in master branch", commit the changes in master branch.
+- Switch to ninja branch, modify README.md with content "Changes in ninja branch", commit the changes in ninja branch.
+- Merge the ninja branch to the master branch in such a fashion that a merge conflict is generated and resolve it using the ours and theirs concept so that the changes of the ninja branch overrides changes in master branch.
 
-case "$2" in
+## Good To Do
+- Simulate the above scenarios using rebase
 
-register)
+#=======================================================================
+## PART B
+#=======================================================================
 
-    script="$4"
-    alias="$6"
+- Write a script to manage branches
+    - Must
+        - List branches
+        - Create branch
+        - Delete branch
+        - Merge 2 branches
+        - Rebase 2 branches
+e.g:
+```
+./gitBranches.sh  -l
 
-    echo "$script" > "$DIR/$alias"
-    echo "Service registered: $alias"
+output:
+master
+ninja
 
-    ;;
+./gitBranch.sh -b <branch_name>
+./gitBranch.sh -d <branch_name>
+./gitBranch.sh -m -1 <branch_name1> -2 <branch_name2> ----> which means branch_name1 branch is going to merge into branch_name2 branch
+./gitBranch.sh -r -1 <branch_name1> -2 <branch_name2>---- which means branch_name1 branch is going to rebase on branch_name2 branch
+```
+#=======================================================================
+## PART C
+#=======================================================================
+- Write a script to manage tags
+    - Must
+        - Create tag
+        - List tags
+        - Delete tag
+e.g:
+```
+./gitTags.sh  -t <tag_name>
+./gitTags.sh  -t ninja_1.0
+./gitTags.sh  -t ninja_1.1
+./gitTags.sh  -l
+output :
+ninja_1.0
+ninja_1.1
+./gitTags.sh  -d <tag_name>
+./gitTags.sh  -d ninja_1.0
+````
+#=======================================================================
+## PART D
+#=======================================================================
+- Write a script to generate commit report of a repo
+    - Input
+        - Repo url
+        - days for which report to be generated
+    - Output
+        - Commit Id
+        - Author name
+        - Autoher EMail
+        - Commit Message
+        - Changed Files lists
+    - Must Do
+        - Report in html or csv format
+    - Optional
+        - An additional column showing if commit is valid or not
+            - A commit is valide if it starts with pattern JIRA-XXXX:
 
-start)
+e.g :
+```
+./gitCommitReport.sh -u <url> -d <days>
+./gitCommitReport.sh -u https://github.com/opstree/spring3hibernate.git -d 40
+```
+output:
+```
+Fri Dec 9 15:49:41 2022 +0530 | Sandeep | sandeep@opstree.com | Updated path to correct value
+Sat Dec 3 10:28:04 2022 +0530 | Sandeep Rawat | sandeep@opstree.com | Merge pull request #40 from opstree/msk-tf-files
+Fri Dec 2 18:16:18 2022 +0530 | priyanshichauhan0707 | priyanshichauhan0707@gmail.com | renamed data_network.tf
+Fri Dec 2 17:52:09 2022 +0530 | priyanshichauhan0707 | priyanshichauhan0707@gmail.com | added _override.tf, backend.tf and data.tf
+Fri Dec 2 11:59:55 2022 +0530 | Sandeep | sandeep@opstree.com | Added capability to fetch & store state in S3
 
-    alias="$4"
-    script=$(cat "$DIR/$alias")
-
-    nohup bash "$script" > "$DIR/$alias.log" 2>&1 &
-    pid=$!
-
-    echo "$pid" > "$DIR/$alias.pid"
-
-    echo "Service started: $alias"
-    echo "PID: $pid"
-
-    ;;
-
-status)
-
-    alias="$4"
-
-    if [ -f "$DIR/$alias.pid" ]; then
-
-        pid=$(cat "$DIR/$alias.pid")
-
-        if ps -p "$pid" > /dev/null; then
-            echo "$alias is running (PID: $pid)"
-        else
-            echo "$alias is not running"
-        fi
-
-    else
-        echo "Service not found"
-    fi
-
-    ;;
-
-kill)
-
-    alias="$4"
-    pid=$(cat "$DIR/$alias.pid")
-
-    kill "$pid"
-
-    echo "Service stopped: $alias"
-
-    ;;
-
-priority)
-
-    priority="$4"
-    alias="$6"
-
-    pid=$(cat "$DIR/$alias.pid")
-
-    if [ "$priority" == "high" ]; then
-        renice -n -10 -p "$pid"
-
-    elif [ "$priority" == "med" ]; then
-        renice -n 0 -p "$pid"
-
-    elif [ "$priority" == "low" ]; then
-        renice -n 10 -p "$pid"
-
-    else
-        echo "Use low/med/high"
-    fi
-
-    ;;
-
-list)
-
-    ls "$DIR" | grep -v '\.pid\|\.log'
-
-    ;;
-
-top)
-
-    if [ -z "$4" ]; then
-        ps -eo pid,state,ni,comm
-    else
-        alias="$4"
-        pid=$(cat "$DIR/$alias.pid")
-        ps -p "$pid" -o pid,state,ni,comm
-    fi
-
-    ;;
-
-*)
-
-    echo "Usage:"
-    echo "./ProcessManager.sh -o register -s <path> -a <alias>"
-    echo "./ProcessManager.sh -o start -a <alias>"
-    echo "./ProcessManager.sh -o status -a <alias>"
-    echo "./ProcessManager.sh -o kill -a <alias>"
-    echo "./ProcessManager.sh -o priority -p <low/med/high> -a <alias>"
-    echo "./ProcessManager.sh -o list"
-    echo "./ProcessManager.sh -o top [-a <alias>]"
-
-    ;;
-
-esac
-[root@ip-172-31-8-196 ~]# 
+```
